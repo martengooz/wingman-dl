@@ -1,1 +1,4 @@
 Lib/
+Include/
+build/
+.pyc
