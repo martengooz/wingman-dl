@@ -3,34 +3,67 @@ from selenium.webdriver.chrome.options import Options
 import requests
 import bz2
 import os
+import argparse
 
-DOWNLOAD_DIR = "D:/Users/snobben/dev/wingman-dl/"
+def parseArgs():
+    parser = argparse.ArgumentParser(description='Download CS:GO Wingman matches from your community profile page.')
+    parser.add_argument('destination',
+                        metavar='destination',
+                        type=str,
+                        help='where to store the demos')
 
-chrome_options = Options()
-#chrome_options.add_argument("--headless")
-chrome_options.add_argument("user-data-dir=C:/Users/snobben/AppData/Local/Google/Chrome/User Data")
+    parser.add_argument('-c', '--chrome', action='store_true',
+                        help='use Chrome')
+    parser.add_argument('-u', '--user-data-dir',
+                        metavar='datadir',
+                        type=str,
+                        help='custom path to chrome data dir (default %%LOCALAPPDATA%%/Google/Chrome/User Data)')
 
-def removeFiles(files):
-    for file in files:
-        os.remove(file)
+    parser.add_argument('-f', '--firefox', action='store_true',
+                    help='use Firefox')
 
-with Chrome(options=chrome_options) as driver:
-    driver.implicitly_wait(15)
-    driver.get("https://steamcommunity.com/id/martengooz/gcpd/730/?tab=matchhistorywingman")
-    elements = driver.find_elements_by_xpath('//td[@class="csgo_scoreboard_cell_noborder"]/a')
+    return parser.parse_args()
+
+def getLinks(args):
     links = []
-    for element in elements:
-        links.append(element.get_attribute('href'))
-    
+    STEAM_PAGE = "https://steamcommunity.com"
+    if args.chrome:
+        chrome_options = Options()
+        chrome_options.add_argument("--disable-extensions")
+        userDataDir = os.getenv('LOCALAPPDATA') + "\\Google\\Chrome\\User Data" if args.user_data_dir == None else args.user_data_dir
+        chrome_options.add_argument("user-data-dir="+ userDataDir)
+        print("Starting Chrome, please wait...")
+        with Chrome(options=chrome_options) as driver:
+            driver.get(STEAM_PAGE)
+            profileLinkElement = driver.find_element_by_class_name("user_avatar")
+            username = profileLinkElement.get_attribute('href').split("/")[-2]
+            driver.get(STEAM_PAGE + "/id/" + username + "/gcpd/730/?tab=matchhistorywingman")
+            linkElements = driver.find_elements_by_xpath('//td[@class="csgo_scoreboard_cell_noborder"]/a')
+            for element in linkElements:
+                links.append(element.get_attribute('href'))
+            driver.quit()
+    print("Found", len(links), "demos")
+    return links
+
+def downloadDemos(args, links):
     for link in links:
         demoname = link.split("/")[-1]
+        unzippedname = args.destination + "/" + demoname[:-4]
+
+        print("Downloading", demoname)
         r = requests.get(link)
-        with open(DOWNLOAD_DIR + demoname , 'wb') as f:
+        with open(args.destination + "/" + demoname , 'wb') as f:
             f.write(r.content)
-    
-        with bz2.BZ2File(DOWNLOAD_DIR + demoname) as compressed:
+
+        print("Unzipping", unzippedname.split("/")[-1])
+        with bz2.BZ2File(args.destination + "/" + demoname) as compressed:
             data = compressed.read()
-            newfilepath = DOWNLOAD_DIR + demoname[:-4]
-            open(newfilepath, 'wb').write(data)
+            open(unzippedname, 'wb').write(data)
         
-        os.remove(DOWNLOAD_DIR + demoname)
+        print("Removing", demoname)
+        os.remove(args.destination + "/" + demoname)
+
+if __name__ == "__main__":
+    args = parseArgs()
+    links = getLinks(args)
+    downloadDemos(args, links)
