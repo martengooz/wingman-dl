@@ -1,5 +1,7 @@
-from selenium.webdriver import Chrome
-from selenium.webdriver.chrome.options import Options  
+from selenium.webdriver import Chrome, Firefox, FirefoxProfile
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+
 import requests
 import bz2
 import os
@@ -28,13 +30,31 @@ def getLinks(args):
     links = []
     STEAM_PAGE = "https://steamcommunity.com"
     if args.chrome:
-        chrome_options = Options()
+        chrome_options = ChromeOptions()
         chrome_options.add_argument("--disable-extensions")
         userDataDir = os.getenv('LOCALAPPDATA') + "\\Google\\Chrome\\User Data" if args.user_data_dir == None else args.user_data_dir
         chrome_options.add_argument("user-data-dir="+ userDataDir)
         print("Starting Chrome, please wait...")
         with Chrome(options=chrome_options) as driver:
             driver.get(STEAM_PAGE)
+            profileLinkElement = driver.find_element_by_class_name("user_avatar")
+            username = profileLinkElement.get_attribute('href').split("/")[-2]
+            driver.get(STEAM_PAGE + "/id/" + username + "/gcpd/730/?tab=matchhistorywingman")
+            linkElements = driver.find_elements_by_xpath('//td[@class="csgo_scoreboard_cell_noborder"]/a')
+            for element in linkElements:
+                links.append(element.get_attribute('href'))
+            driver.quit()
+    if args.firefox:
+        firefox_options = FirefoxOptions()
+        firefox_options.add_argument("--disable-extensions")
+        userDataDir = os.getenv('APPDATA')+"\\Mozilla\\Firefox\\Profiles\\n35rrdqb.default-release" if args.user_data_dir == None else args.user_data_dir ## Fix
+        userDataDir = userDataDir.replace("\\", "/")
+        print(userDataDir)
+        fp = FirefoxProfile(userDataDir)
+        print("Starting Firefox, please wait...")
+        with Firefox(fp, options=firefox_options) as driver:
+            driver.get(STEAM_PAGE)
+            driver.implicitly_wait(10) # Remove
             profileLinkElement = driver.find_element_by_class_name("user_avatar")
             username = profileLinkElement.get_attribute('href').split("/")[-2]
             driver.get(STEAM_PAGE + "/id/" + username + "/gcpd/730/?tab=matchhistorywingman")
