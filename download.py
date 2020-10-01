@@ -10,6 +10,9 @@ from selenium.common.exceptions import NoSuchElementException, InvalidArgumentEx
 STEAM_PAGE = "https://steamcommunity.com"
 
 def parseArgs():
+    """
+    Handle command line arguments
+    """
     parser = ArgumentParser(description='Download CS:GO Wingman matches from your community profile page.')
     parser.add_argument('destination',
                         metavar='destination',
@@ -27,14 +30,14 @@ def parseArgs():
 
 def getWebDriver(args):
     """
-    docstring
+    Get the appopiate driver for chosen browser
     """
     driver = None
     if args.chrome:
         options = ChromeOptions()
         options.page_load_strategy = 'eager'
         options.add_argument("--disable-extensions")
-        userDataDir = os.getenv('LOCALAPPDATA') + "\\Google\\Chrome\\User Data" if args.profile == None else args.profile
+        userDataDir = os.getenv('LOCALAPPDATA') + "\\Google\\Chrome\\User Data" if args.profile == None else args.profile # Default profile directory
         options.add_argument("user-data-dir="+ userDataDir)
         driver = Chrome(options=options)
 
@@ -42,8 +45,8 @@ def getWebDriver(args):
         options = FirefoxOptions()
         options.page_load_strategy = 'eager'
         options.add_argument("--disable-extensions")
-        profiles = os.listdir(os.getenv('APPDATA')+"\\Mozilla\\Firefox\\Profiles\\")
-        default_profile = next(profile for profile in profiles if profile[-15:] == "default-release")
+        profiles = os.listdir(os.getenv('APPDATA')+"\\Mozilla\\Firefox\\Profiles\\") # Default profile directory
+        default_profile = next(profile for profile in profiles if profile[-15:] == "default-release") # "xxxxxxxx.default-release" is the default profile for Release versions v67+
         userDataDir = os.getenv('APPDATA')+"\\Mozilla\\Firefox\\Profiles\\" + default_profile if args.profile == None else args.profile
         fp = FirefoxProfile(userDataDir)
         driver = Firefox(fp, options=options)
@@ -54,6 +57,9 @@ def getWebDriver(args):
     return driver
 
 def getUser(driver):
+    """
+    Get the logged in user
+    """
     driver.get(STEAM_PAGE)
     try: # Check for login button on homepage
         driver.find_element_by_link_text("login")
@@ -66,6 +72,9 @@ def getUser(driver):
 
 
 def getLinks(args):
+    """
+    Scan the steam community page for wingman demo links
+    """
     links = []
     try:
         with getWebDriver(args) as driver:
@@ -89,14 +98,19 @@ def getLinks(args):
     return links
 
 def downloadDemos(args, links):
+    """
+    Download demos from the accumulated links
+    """
+    skippedDemos = 0
+    downloadedDemos = 0
+    erroredDemos = 0
+
     try:
         alreadyDownloaded = os.listdir(args.destination)
     except:
         print(f"ERROR: Failed to read destination path {args.destination}. Make sure you have the right permissions and that the directory exist.") 
         return
-    skippedDemos = 0
-    downloadedDemos = 0
-    erroredDemos = 0
+
     for link in links:
         demoname = link.split("/")[-1]
         unzippedname = demoname[:-4]
@@ -145,6 +159,9 @@ def downloadDemos(args, links):
     return skippedDemos, downloadedDemos, erroredDemos 
 
 def printResult(res):
+    """
+    Prints the number of downloaded, skipped and errored demos
+    """
     skippedDemos, downloadedDemos, erroredDemos = res
     print()
     print("RESULTS:")
