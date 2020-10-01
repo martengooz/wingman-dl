@@ -153,7 +153,7 @@ def getMissingArguments(args):
         else: 
             print("Ok, winman-dl aborted")
             exit()
-            
+
     return args
 
 def getWebDriver(args):
@@ -335,5 +335,5 @@ if __name__ == "__main__":
     links = getLinks(args)
     res = downloadDemos(args, links)
     printResult(res)
-    if args.missingRequired:
-        input()
+    if args.missingRequired: # Wait for user input before exiting 
+        input() 
