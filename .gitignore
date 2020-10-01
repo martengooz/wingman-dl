@@ -4,3 +4,4 @@ build/
 *.pyc
 *.dem
 *.bz2
+*.log
