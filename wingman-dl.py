@@ -47,10 +47,10 @@ def getMissingArguments(args):
     """
     If required arguments are missing, prompt for them 
     """
-    missingRequired = False
+    args.missingRequired = False
     # Missing browser
     if not args.chrome and not args.edge and not args.firefox: 
-        missingRequired = True
+        args.missingRequired = True
         while(True):
             print()
             print("Which browser do you want to use?")
@@ -100,7 +100,7 @@ def getMissingArguments(args):
                     continue
         
     if not args.destination:
-        missingRequired = True
+        args.missingRequired = True
         customDestination = False
         while(True):
             print()
@@ -140,7 +140,7 @@ def getMissingArguments(args):
                 except:
                     print("Couldn't find that directory, please choose another or create it first!")
     
-    if missingRequired:
+    if args.missingRequired:
         print()
         print("Are these settings ok?")
         print("Will launch in " + getBrowserName(args))
@@ -153,7 +153,7 @@ def getMissingArguments(args):
         else: 
             print("Ok, winman-dl aborted")
             exit()
-
+            
     return args
 
 def getWebDriver(args):
@@ -335,3 +335,5 @@ if __name__ == "__main__":
     links = getLinks(args)
     res = downloadDemos(args, links)
     printResult(res)
+    if args.missingRequired:
+        input()
