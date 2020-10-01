@@ -1,17 +1,16 @@
-from selenium.common.exceptions import NoSuchElementException, InvalidArgumentException
+import os
+import requests
+from bz2 import BZ2File
+from argparse import ArgumentParser
 from selenium.webdriver import Chrome, Firefox, FirefoxProfile
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-
-import requests
-import bz2
-import os
-import argparse
+from selenium.common.exceptions import NoSuchElementException, InvalidArgumentException
 
 STEAM_PAGE = "https://steamcommunity.com"
 
 def parseArgs():
-    parser = argparse.ArgumentParser(description='Download CS:GO Wingman matches from your community profile page.')
+    parser = ArgumentParser(description='Download CS:GO Wingman matches from your community profile page.')
     parser.add_argument('destination',
                         metavar='destination',
                         type=str,
@@ -124,7 +123,7 @@ def downloadDemos(args, links):
             # Unzip the compressed demo
             try:
                 print("Unzipping", unzippedname.split("/")[-1])
-                with bz2.BZ2File(args.destination + "/" + demoname) as compressed:
+                with BZ2File(args.destination + "/" + demoname) as compressed:
                     data = compressed.read()
                     open(args.destination + "/" + unzippedname, 'wb').write(data)
             except: 
