@@ -26,6 +26,8 @@ def parseArgs():
         metavar='profiledir',
         type=str,
         help='custom path to browser profile directory')
+    parser.add_argument('-k', '--keep-compressed', action='store_true',
+                help="keep the compressed demo files after download")
     return parser.parse_args()
 
 def getWebDriver(args):
@@ -135,24 +137,25 @@ def downloadDemos(args, links):
                 continue
             
             # Unzip the compressed demo
-            try:
-                print("Unzipping", unzippedname.split("/")[-1])
-                with BZ2File(args.destination + "/" + demoname) as compressed:
-                    data = compressed.read()
-                    open(args.destination + "/" + unzippedname, 'wb').write(data)
-            except: 
-                print(f"ERROR: Could not extract demo {demoname}")
-                erroredDemos += 1
-                continue
+                try:
+                    print("Unzipping", unzippedname.split("/")[-1])
+                    with BZ2File(args.destination + "/" + demoname) as compressed:
+                        data = compressed.read()
+                        open(args.destination + "/" + unzippedname, 'wb').write(data)
+                except: 
+                    print(f"ERROR: Could not extract demo {demoname}")
+                    erroredDemos += 1
+                    continue
             
             # Delete compressed demo
-            try:
-                print("Removing", demoname)
-                os.remove(args.destination + "/" + demoname)
-            except:
-                print(f"ERROR: Could not delete {demoname}")
-                erroredDemos += 1
-                continue
+            if not args.keep_compressed:
+                try:
+                    print("Removing", demoname)
+                    os.remove(args.destination + "/" + demoname)
+                except:
+                    print(f"ERROR: Could not delete {demoname}")
+                    erroredDemos += 1
+                    continue
             downloadedDemos += 1
         else:
             print(f"ERROR: Could not download the demo. Maybe the steam download servers are down or link broken. Link: {link}")
