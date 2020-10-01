@@ -23,11 +23,12 @@ def parseArgs():
                         metavar='destination',
                         type=str,
                         help='where to store the demos')
-    parser.add_argument('-c', '--chrome', action='store_true',
+    browserGroup = parser.add_mutually_exclusive_group(required=True)
+    browserGroup.add_argument('-c', '--chrome', action='store_true',
                         help='use Google Chrome')
-    parser.add_argument('-f', '--firefox', action='store_true',
+    browserGroup.add_argument('-f', '--firefox', action='store_true',
                     help='use Mozilla Firefox')
-    parser.add_argument('-e', '--edge', action='store_true',
+    browserGroup.add_argument('-e', '--edge', action='store_true',
                     help='use Microsoft Edge')
     parser.add_argument('-p', '--profile',
         metavar='profiledir',
