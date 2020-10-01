@@ -5,3 +5,6 @@ build/
 *.dem
 *.bz2
 *.log
+geckodriver.exe
+msedgedriver.exe
+chromedriver.exe
