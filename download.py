@@ -16,13 +16,13 @@ def parseArgs():
 
     parser.add_argument('-c', '--chrome', action='store_true',
                         help='use Chrome')
-    parser.add_argument('-u', '--user-data-dir',
-                        metavar='datadir',
-                        type=str,
-                        help='custom path to chrome data dir (default %%LOCALAPPDATA%%/Google/Chrome/User Data)')
-
+    
     parser.add_argument('-f', '--firefox', action='store_true',
                     help='use Firefox')
+    parser.add_argument('-p', '--profile',
+        metavar='profiledir',
+        type=str,
+        help='custom path to browser profile directory')
 
     return parser.parse_args()
 
@@ -32,7 +32,7 @@ def getLinks(args):
     if args.chrome:
         chrome_options = ChromeOptions()
         chrome_options.add_argument("--disable-extensions")
-        userDataDir = os.getenv('LOCALAPPDATA') + "\\Google\\Chrome\\User Data" if args.user_data_dir == None else args.user_data_dir
+        userDataDir = os.getenv('LOCALAPPDATA') + "\\Google\\Chrome\\User Data" if args.profile == None else args.profile
         chrome_options.add_argument("user-data-dir="+ userDataDir)
         print("Starting Chrome, please wait...")
         with Chrome(options=chrome_options) as driver:
@@ -47,7 +47,9 @@ def getLinks(args):
     if args.firefox:
         firefox_options = FirefoxOptions()
         firefox_options.add_argument("--disable-extensions")
-        userDataDir = os.getenv('APPDATA')+"\\Mozilla\\Firefox\\Profiles\\n35rrdqb.default-release" if args.user_data_dir == None else args.user_data_dir ## Fix
+        profiles = os.listdir(os.getenv('APPDATA')+"\\Mozilla\\Firefox\\Profiles\\")
+        default_profile = next(profile for profile in profiles if profile[-15:] == "default-release")
+        userDataDir = os.getenv('APPDATA')+"\\Mozilla\\Firefox\\Profiles\\" + default_profile if args.profile == None else args.profile ## Fix
         userDataDir = userDataDir.replace("\\", "/")
         print(userDataDir)
         fp = FirefoxProfile(userDataDir)
