@@ -1,4 +1,6 @@
 Lib/
 Include/
 build/
-.pyc
+*.pyc
+*.dem
+*.bz2
