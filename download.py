@@ -1,4 +1,4 @@
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, InvalidArgumentException
 from selenium.webdriver import Chrome, Firefox, FirefoxProfile
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.chrome.options import Options as ChromeOptions
@@ -56,53 +56,95 @@ def getWebDriver(args):
 
 def getUser(driver):
     driver.get(STEAM_PAGE)
-    try:
+    try: # Check for login button on homepage
         driver.find_element_by_link_text("login")
-        print("No user is logged in")
+        
         return False
-    except NoSuchElementException:
-        profileLinkElement = driver.find_element_by_class_name("user_avatar")
+    except NoSuchElementException: # Desired outcome, user is logged in
+        profileLinkElement = driver.find_element_by_class_name("user_avatar") # top right profile pic 
         username = profileLinkElement.get_attribute('href').split("/")[-2]
-        print(f"User {username} is logged in")
         return username
 
 
 def getLinks(args):
     links = []
-    with getWebDriver(args) as driver:
-        user = getUser(driver)
-        if user:
-            # Get the demo download links
-            driver.get(STEAM_PAGE + "/id/" + user + "/gcpd/730/?tab=matchhistorywingman")
-
-            # TODO: Load more wingman matches
-            try:
-                linkElements = driver.find_elements_by_xpath('//td[@class="csgo_scoreboard_cell_noborder"]/a')
+    try:
+        with getWebDriver(args) as driver:
+            user = getUser(driver)
+            if user:
+                print(f"User {user} is logged in")
+                # Get the demo download links
+                driver.get(STEAM_PAGE + "/id/" + user + "/gcpd/730/?tab=matchhistorywingman")
+                # TODO: Load more wingman matches
+                linkElements = driver.find_elements_by_xpath('//td[@class="csgo_scoreboard_cell_noborder"]/a') # td: cell for download button, a: download link
                 for element in linkElements:
                     links.append(element.get_attribute('href'))
                 print(f"Found {len(links)} demos")
-            except NoSuchElementException:
-                print("Could not find any recent matches") 
+            else:
+                print("ERROR: No user is logged in")
             driver.quit()
+    except InvalidArgumentException:
+        print("ERROR: Browser is already running. Please close all instances of it before running this software.")
+    except NoSuchElementException:
+        print("ERROR: Could not find any recent matches")     
     return links
 
 def downloadDemos(args, links):
+    try:
+        alreadyDownloaded = os.listdir(args.destination)
+    except:
+        print(f"ERROR: Failed to read destination path {args.destination}. Make sure you have the right permissions and that the directory exist.") 
+        return
+    skippedDemos = 0
+    downloadedDemos = 0
+    erroredDemos = 0
     for link in links:
         demoname = link.split("/")[-1]
-        unzippedname = args.destination + "/" + demoname[:-4]
-
+        unzippedname = demoname[:-4]
+        
+        # Check if already downloaded
+        if unzippedname in alreadyDownloaded:
+            print(f"Skipping {demoname} (already downloaded)")
+            skippedDemos += 1
+            continue
+        
+        # Download
         print("Downloading", demoname)
         r = requests.get(link)
-        with open(args.destination + "/" + demoname , 'wb') as f:
-            f.write(r.content)
+        if r.ok:
+            # Write compressed demo to disk
+            try: 
+                with open(args.destination + "/" + demoname , 'wb') as f:
+                    f.write(r.content)
+            except: 
+                print(f"ERROR: Could not write demo {demoname} to disk")
+                erroredDemos += 1
+                continue
+            
+            # Unzip the compressed demo
+            try:
+                print("Unzipping", unzippedname.split("/")[-1])
+                with bz2.BZ2File(args.destination + "/" + demoname) as compressed:
+                    data = compressed.read()
+                    open(args.destination + "/" + unzippedname, 'wb').write(data)
+            except: 
+                print(f"ERROR: Could not extract demo {demoname}")
+                erroredDemos += 1
+                continue
+            
+            # Delete compressed demo
+            try:
+                print("Removing", demoname)
+                os.remove(args.destination + "/" + demoname)
+            except:
+                print(f"ERROR: Could not delete {demoname}")
+                erroredDemos += 1
+                continue
+            downloadedDemos += 1
+        else:
+            print(f"ERROR: Could not download the demo. Maybe the steam download servers are down or link broken. Link: {link}")
+    return skippedDemos, downloadedDemos, erroredDemos 
 
-        print("Unzipping", unzippedname.split("/")[-1])
-        with bz2.BZ2File(args.destination + "/" + demoname) as compressed:
-            data = compressed.read()
-            open(unzippedname, 'wb').write(data)
-        
-        print("Removing", demoname)
-        os.remove(args.destination + "/" + demoname)
 
 if __name__ == "__main__":
     args = parseArgs()
