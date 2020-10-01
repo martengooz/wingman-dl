@@ -28,6 +28,8 @@ def parseArgs():
         help='custom path to browser profile directory')
     parser.add_argument('-k', '--keep-compressed', action='store_true',
                 help="keep the compressed demo files after download")
+    parser.add_argument('-e', '--no-exctraction', action='store_true',
+                help="don't extract the compressed demo files")
     return parser.parse_args()
 
 def getWebDriver(args):
@@ -118,7 +120,7 @@ def downloadDemos(args, links):
         unzippedname = demoname[:-4]
         
         # Check if already downloaded
-        if unzippedname in alreadyDownloaded:
+        if unzippedname in alreadyDownloaded or demoname in alreadyDownloaded:
             print(f"Skipping {demoname} (already downloaded)")
             skippedDemos += 1
             continue
@@ -137,6 +139,7 @@ def downloadDemos(args, links):
                 continue
             
             # Unzip the compressed demo
+            if not args.no_exctraction:
                 try:
                     print("Unzipping", unzippedname.split("/")[-1])
                     with BZ2File(args.destination + "/" + demoname) as compressed:
