@@ -1,6 +1,8 @@
 Lib/
 Include/
 build/
+Scripts/
+pyvenv.cfg
 *.pyc
 *.dem
 *.bz2
