@@ -5,6 +5,8 @@ from argparse import ArgumentParser
 from selenium.webdriver import Chrome, Firefox, FirefoxProfile
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.chrome.options import Options as ChromeOptions
+from msedge.selenium_tools.webdriver import WebDriver as Edge
+from msedge.selenium_tools.options import Options as EdgeOptions
 from selenium.common.exceptions import NoSuchElementException, InvalidArgumentException
 
 STEAM_PAGE = "https://steamcommunity.com"
@@ -19,16 +21,18 @@ def parseArgs():
                         type=str,
                         help='where to store the demos')
     parser.add_argument('-c', '--chrome', action='store_true',
-                        help='use Chrome')
+                        help='use Google Chrome')
     parser.add_argument('-f', '--firefox', action='store_true',
-                    help='use Firefox')
+                    help='use Mozilla Firefox')
+    parser.add_argument('-e', '--edge', action='store_true',
+                    help='use Microsoft Edge')
     parser.add_argument('-p', '--profile',
         metavar='profiledir',
         type=str,
         help='custom path to browser profile directory')
     parser.add_argument('-k', '--keep-compressed', action='store_true',
                 help="keep the compressed demo files after download")
-    parser.add_argument('-e', '--no-exctraction', action='store_true',
+    parser.add_argument('-n', '--no-exctraction', action='store_true',
                 help="don't extract the compressed demo files")
     return parser.parse_args()
 
@@ -56,7 +60,13 @@ def getWebDriver(args):
         driver = Firefox(fp, options=options)
 
     elif args.edge:
-        pass
+        options = EdgeOptions()
+        options.page_load_strategy = 'eager'
+        options.use_chromium = True
+        options.add_argument("--disable-extensions")
+        userDataDir = os.getenv('LOCALAPPDATA') + "\\Microsoft\\Edge\\User Data" if args.profile == None else args.profile # Default profile directory
+        options.add_argument("user-data-dir="+ userDataDir)
+        driver = Edge(options=options)
 
     return driver
 
