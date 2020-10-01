@@ -7,11 +7,11 @@ build_options = {'packages': [], 'excludes': []}
 base = 'Console'
 
 executables = [
-    Executable('download.py', base=base)
+    Executable('wingman-dl.py', base=base)
 ]
 
 setup(name='wingman-dl',
       version = '1.0',
-      description = 'Download CSGO Wingman demos from steam community',
+      description = 'Downloads CS:GO Wingman matches from your community profile',
       options = {'build_exe': build_options},
       executables = executables)
