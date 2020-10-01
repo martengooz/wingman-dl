@@ -10,7 +10,7 @@ from msedge.selenium_tools.options import Options as EdgeOptions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException, InvalidArgumentException, TimeoutException
+from selenium.common.exceptions import NoSuchElementException, InvalidArgumentException, TimeoutException, WebDriverException
 
 STEAM_PAGE = "https://steamcommunity.com"
 
@@ -121,7 +121,17 @@ def getLinks(args):
     except InvalidArgumentException:
         print("ERROR: Browser is already running. Please close all instances of it before running this software.")
     except NoSuchElementException:
-        print("ERROR: Could not find any recent matches")     
+        print("ERROR: Could not find any recent matches")
+    except WebDriverException:
+        if args.chrome:
+            print("ERROR: Could not find chromedriver.exe") 
+            print("Please download the correct version from https://chromedriver.chromium.org/ and put in the same directory as wingman-dl.exe")
+        if args.firefox:
+            print("ERROR: Could not find geckodriver.exe") 
+            print("Please download the correct version from https://github.com/mozilla/geckodriver/releases and put in the same directory as wingman-dl.exe")
+        if args.firefox:
+            print("ERROR: Could not find msedgedriver.exe") 
+            print("Please download the correct version from https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/ and put in the same directory as wingman-dl.exe")
     return links
 
 def downloadDemos(args, links):
