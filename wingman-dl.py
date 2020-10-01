@@ -33,10 +33,10 @@ def parseArgs():
         help='custom path to browser profile directory')
     parser.add_argument('-k', '--keep-compressed', action='store_true',
                 help="keep the compressed demo files after download")
-    parser.add_argument('-n', '--no-exctraction', action='store_true',
+    parser.add_argument('-n', '--no-extraction', action='store_true',
                 help="don't extract the compressed demo files")
     parser.add_argument('-w', '--wait', action='store_true',
-                help="start the brower and wait for login before continuing")
+                help="start the broswer and wait for login before continuing")
     parser.add_argument('-d', '--destination',
                         metavar='destination',
                         type=str,
@@ -83,7 +83,7 @@ def getMissingArguments(args):
                 print()
                 print("Are you already logged in?")
                 print("1. Yes")
-                print("2. No, I need to log in first (will open a new brower window)")
+                print("2. No, I need to log in first (will open a new browser window)")
                 loggedin = input("Please type a number (default 1): ")
                 if loggedin == "":
                     break
@@ -292,7 +292,7 @@ def downloadDemos(args, links):
                 continue
             
             # Unzip the compressed demo
-            if not args.no_exctraction:
+            if not args.no_extraction:
                 try:
                     print("Unzipping", unzippedname.split("/")[-1])
                     with BZ2File(args.destination + "/" + demoname) as compressed:
