@@ -50,7 +50,6 @@ def getWebDriver(args):
     if args.chrome:
         options = ChromeOptions()
         options.page_load_strategy = 'eager'
-        options.add_argument("--disable-extensions")
         userDataDir = os.getenv('LOCALAPPDATA') + "\\Google\\Chrome\\User Data" if args.profile == None else args.profile # Default profile directory
         options.add_argument("user-data-dir="+ userDataDir)
         driver = Chrome(options=options)
@@ -58,7 +57,6 @@ def getWebDriver(args):
     elif args.firefox:
         options = FirefoxOptions()
         options.page_load_strategy = 'eager'
-        options.add_argument("--disable-extensions")
         profiles = os.listdir(os.getenv('APPDATA')+"\\Mozilla\\Firefox\\Profiles\\") # Default profile directory
         default_profile = next(profile for profile in profiles if profile[-15:] == "default-release") # "xxxxxxxx.default-release" is the default profile for Release versions v67+
         userDataDir = os.getenv('APPDATA')+"\\Mozilla\\Firefox\\Profiles\\" + default_profile if args.profile == None else args.profile
@@ -69,7 +67,6 @@ def getWebDriver(args):
         options = EdgeOptions()
         options.page_load_strategy = 'eager'
         options.use_chromium = True
-        options.add_argument("--disable-extensions")
         userDataDir = os.getenv('LOCALAPPDATA') + "\\Microsoft\\Edge\\User Data" if args.profile == None else args.profile # Default profile directory
         options.add_argument("user-data-dir="+ userDataDir)
         driver = Edge(options=options)
