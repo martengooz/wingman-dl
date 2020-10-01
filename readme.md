@@ -4,8 +4,11 @@
 The easiest way to run wingman-dl is to [download the exe](https://github.com/martengooz/wingman-dl/releases). 
 
 Download the appropiate Webdriver for your browser:
+
+**If running Chrome or Edge you will have to close all browser windows before running wingman-dl in order for it to use the logged in user.**
 * [Chrome](https://chromedriver.chromium.org/downloads)
 * [Edge](https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/)
+
 * [Firefox](https://github.com/mozilla/geckodriver/releases)
 
 Save the webdriver .exe in the same directory as `wingman-dl.exe`.
