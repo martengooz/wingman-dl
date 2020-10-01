@@ -7,7 +7,10 @@ from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from msedge.selenium_tools.webdriver import WebDriver as Edge
 from msedge.selenium_tools.options import Options as EdgeOptions
-from selenium.common.exceptions import NoSuchElementException, InvalidArgumentException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException, InvalidArgumentException, TimeoutException
 
 STEAM_PAGE = "https://steamcommunity.com"
 
@@ -34,6 +37,8 @@ def parseArgs():
                 help="keep the compressed demo files after download")
     parser.add_argument('-n', '--no-exctraction', action='store_true',
                 help="don't extract the compressed demo files")
+    parser.add_argument('-w', '--wait', action='store_true',
+                help="start the brower and wait for login before continuing")
     return parser.parse_args()
 
 def getWebDriver(args):
@@ -70,19 +75,26 @@ def getWebDriver(args):
 
     return driver
 
-def getUser(driver):
+def getUser(args, driver):
     """
     Get the logged in user
     """
     driver.get(STEAM_PAGE)
     try: # Check for login button on homepage
         driver.find_element_by_link_text("login")
-        
+        if args.wait: # Wait for login
+            profileLinkElement = WebDriverWait(driver, 600).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "user_avatar")))
+            username = profileLinkElement.get_attribute('href').split("/")[-2]
+            return username
         return False
     except NoSuchElementException: # Desired outcome, user is logged in
         profileLinkElement = driver.find_element_by_class_name("user_avatar") # top right profile pic 
         username = profileLinkElement.get_attribute('href').split("/")[-2]
         return username
+    except TimeoutException: 
+        print("Could not detect a user login within 10 minutes")
+        return False
 
 
 def getLinks(args):
@@ -92,7 +104,7 @@ def getLinks(args):
     links = []
     try:
         with getWebDriver(args) as driver:
-            user = getUser(driver)
+            user = getUser(args, driver)
             if user:
                 print(f"User {user} is logged in")
                 # Get the demo download links
