@@ -145,9 +145,17 @@ def downloadDemos(args, links):
             print(f"ERROR: Could not download the demo. Maybe the steam download servers are down or link broken. Link: {link}")
     return skippedDemos, downloadedDemos, erroredDemos 
 
+def printResult(res):
+    skippedDemos, downloadedDemos, erroredDemos = res
+    print()
+    print("RESULTS:")
+    print("Downloaded", downloadedDemos)
+    print("Skipped", skippedDemos)
+    print("Failed", erroredDemos)
+    print()
 
 if __name__ == "__main__":
     args = parseArgs()
     links = getLinks(args)
-    downloadDemos(args, links)
-    print("Exiting")
+    res = downloadDemos(args, links)
+    printResult(res)
