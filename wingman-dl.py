@@ -1,4 +1,5 @@
 import os
+from types import CodeType
 import requests
 from bz2 import BZ2File
 from argparse import ArgumentParser
@@ -19,11 +20,7 @@ def parseArgs():
     Handle command line arguments
     """
     parser = ArgumentParser(description='Download CS:GO Wingman matches from your community profile page.')
-    parser.add_argument('destination',
-                        metavar='destination',
-                        type=str,
-                        help='where to store the demos')
-    browserGroup = parser.add_mutually_exclusive_group(required=True)
+    browserGroup = parser.add_mutually_exclusive_group()
     browserGroup.add_argument('-c', '--chrome', action='store_true',
                         help='use Google Chrome')
     browserGroup.add_argument('-f', '--firefox', action='store_true',
@@ -40,7 +37,124 @@ def parseArgs():
                 help="don't extract the compressed demo files")
     parser.add_argument('-w', '--wait', action='store_true',
                 help="start the brower and wait for login before continuing")
+    parser.add_argument('-d', '--destination',
+                        metavar='destination',
+                        type=str,
+                        help='where to store the demos')
     return parser.parse_args()
+
+def getMissingArguments(args):
+    """
+    If required arguments are missing, prompt for them 
+    """
+    missingRequired = False
+    # Missing browser
+    if not args.chrome and not args.edge and not args.firefox: 
+        missingRequired = True
+        while(True):
+            print()
+            print("Which browser do you want to use?")
+            print("1. Google Chrome")
+            print("2. Mozilla Firefox")
+            print("3. Microsoft Edge")
+            browser = input("Please type a number [default 1]: ")
+            if browser == "":
+                args.chrome = True
+                break
+            try:
+                browser = int(browser)
+            except: 
+                continue
+            if browser == 1:
+                args.chrome = True
+                break
+            elif browser == 2:
+                args.firefox = True
+                break
+            elif browser == 3:
+                args.edge = True
+                break
+            else:
+                continue
+        
+        # Ask whether the user is logged in
+        if not args.wait:
+            while(True):
+                print()
+                print("Are you already logged in?")
+                print("1. Yes")
+                print("2. No, I need to log in first (will open a new brower window)")
+                loggedin = input("Please type a number (default 1): ")
+                if loggedin == "":
+                    break
+                try:
+                    loggedin = int(loggedin)
+                except: 
+                    continue
+                if loggedin == 1:
+                    break
+                elif loggedin == 2:
+                    args.wait = True
+                    break
+                else:
+                    continue
+        
+    if not args.destination:
+        missingRequired = True
+        customDestination = False
+        while(True):
+            print()
+            print("Where do you want to save the demos?")
+            print("1. The same directory as this program")
+            print("2. My Downloads")
+            print("3. Other (please specify next)")
+            destination = input("Please type a number (default 1): ")
+            if destination == "":
+                args.destination = os.path.abspath(".")
+                break
+            try:
+                destination = int(destination)
+            except: 
+                continue
+            if destination == 1:
+                args.destination = os.path.abspath(".")
+                break
+            elif destination == 2:
+                args.destination = 	os.getenv("USERPROFILE") + "\\Downloads"
+                break
+            elif destination == 3:
+                customDestination = True
+                break
+            else:
+                continue
+        
+        if customDestination:
+            while(True):
+                try:
+                    path = input("Path to download directory: ")
+                    if os.path.isdir(path):
+                        args.destination = path
+                        break
+                    else:
+                        print("Couldn't find that directory, please choose another or create it first!")
+                except:
+                    print("Couldn't find that directory, please choose another or create it first!")
+    
+    if missingRequired:
+        print()
+        print("Are these settings ok?")
+        print("Will launch in " + getBrowserName(args))
+        if args.wait:
+            print("Will open a new browser window and wait for you to login before scanning for demos")
+        print("Demos will be saved to " + os.path.abspath(args.destination))
+        res = input("Is this correct? [Y/N] (default Y):")
+        if res.upper() == "Y" or res == "":
+            print("Ok, starting wingman-dl")
+        else: 
+            print("Ok, winman-dl aborted")
+            exit()
+
+    return args
 
 def getWebDriver(args):
     """
@@ -72,6 +186,15 @@ def getWebDriver(args):
         driver = Edge(options=options)
 
     return driver
+
+def getBrowserName(args):
+    if args.chrome:
+        return "Chrome"
+    elif args.firefox:
+        return "Firefox"
+    elif args.edge:
+        return "Edge"
+    return ""
 
 def getUser(args, driver):
     """
@@ -208,6 +331,7 @@ def printResult(res):
 
 if __name__ == "__main__":
     args = parseArgs()
+    args = getMissingArguments(args)
     links = getLinks(args)
     res = downloadDemos(args, links)
     printResult(res)
