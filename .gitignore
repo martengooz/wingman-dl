@@ -10,6 +10,7 @@ pyvenv.cfg
 *.bz2
 *.log
 *.spec
+.vscode/
 geckodriver.exe
 msedgedriver.exe
 chromedriver.exe
