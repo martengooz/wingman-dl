@@ -1,12 +1,15 @@
+__pycache__
 Lib/
 Include/
 build/
+dist/
 Scripts/
 pyvenv.cfg
 *.pyc
 *.dem
 *.bz2
 *.log
+*.spec
 geckodriver.exe
 msedgedriver.exe
 chromedriver.exe
