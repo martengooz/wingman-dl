@@ -1,5 +1,5 @@
 # wingman-dl
-wingman-dl is a tool to automatically download all recent CS:GO Wingman matches directly from your steam community profile. It works on any Windows machine with the latest version of Google Chrome, Mozilla Firefox or Microsoft Edge. The matches can later be watched in game or loaded into your favorite statistics service (like [CSGO Demos Manager](https://github.com/akiver/csgo-demos-manager))
+wingman-dl is a tool to automatically download all recent CS:GO Wingman matches directly from your steam community profile. It works on any Windows machine with the latest version of Google Chrome, Mozilla Firefox or Microsoft Edge. The matches can later be watched in game or loaded into your favorite statistics service (like [CSGO Demos Manager](https://github.com/akiver/csgo-demos-manager)).
 
 ## Easy installation
 The easiest way to run wingman-dl is to [download the exe](https://github.com/martengooz/wingman-dl/releases). 
@@ -33,7 +33,7 @@ wingman-dl can be used by just running the application. It will prompt you for w
 ### Using the cli
 wingman-dl can also be used with the command line without user input. If any of the required arguments are not provided, wingman-dl will prompt you for the missing ones.
 ```
-usage: wingman-dl.py [BROWSER] [OPTIONS] [-d destination]
+usage: wingman-dl.exe [BROWSER] [OPTIONS] [-d destination]
 
 Required arguments:
   BROWSERS:
