@@ -248,8 +248,11 @@ def getLinks(args):
             if user:
                 print(f"User {user} is logged in")
                 # Get the demo download links
-                driver.get(STEAM_PAGE + "/id/" + user +
-                           "/gcpd/730/?tab=matchhistorywingman")
+                if user.isdigit():
+                    statlink = STEAM_PAGE + "/profiles/" + user + "/gcpd/730/?tab=matchhistorywingman"
+                else:
+                    statlink = STEAM_PAGE + "/id/" + user + "/gcpd/730/?tab=matchhistorywingman"
+                driver.get(statlink)
                 # TODO: Load more wingman matches
                 # td: cell for download button, a: download link
                 linkElements = driver.find_elements_by_xpath(
